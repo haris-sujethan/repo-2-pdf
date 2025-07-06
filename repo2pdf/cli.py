@@ -2,7 +2,25 @@ import inquirer
 from repo2pdf.core import process_local_repo, process_remote_repo
 
 def main():
-    print("🔷 Repo2PDF – Convert your code repositories to PDFs")
+    ascii_art = r"""
+                                                 $$$$$$\                          $$\  $$$$$$\  
+                                                $$  __$$\                         $$ |$$  __$$\ 
+ $$$$$$\   $$$$$$\   $$$$$$\   $$$$$$\          \__/  $$ |         $$$$$$\   $$$$$$$ |$$ /  \__|
+$$  __$$\ $$  __$$\ $$  __$$\ $$  __$$\ $$$$$$\  $$$$$$  |$$$$$$\ $$  __$$\ $$  __$$ |$$$$\     
+$$ |  \__|$$$$$$$$ |$$ /  $$ |$$ /  $$ |\______|$$  ____/ \______|$$ /  $$ |$$ /  $$ |$$  _|    
+$$ |      $$   ____|$$ |  $$ |$$ |  $$ |        $$ |              $$ |  $$ |$$ |  $$ |$$ |      
+$$ |      \$$$$$$$\ $$$$$$$  |\$$$$$$  |        $$$$$$$$\         $$$$$$$  |\$$$$$$$ |$$ |      
+\__|       \_______|$$  ____/  \______/         \________|        $$  ____/  \_______|\__|      
+                    $$ |                                          $$ |                          
+                    $$ |                                          $$ |                          
+                    \__|                                          \__|                          
+
+Welcome to repo-pdf – convert your repositories to PDFs
+
+Built by Haris
+
+    """
+    print(ascii_art)
 
     repo_type_q = [
         inquirer.List('repo_type',
