@@ -6,12 +6,12 @@ Convert your repositories into clean PDFs and structured JSON outputs, designed 
 
 - Convert **local** or **remote GitHub repositories**
 - Generate **PDFs** containing full file structures and contents
-- Output structured **JSON summaries** for AI context ingestion
+- Output structured **JSON summaries**
 - Exclude unnecessary file types automatically
 
 ## Installation
 
-### Option 1: Install from PyPI (Recommended)
+### Option 1: Install from [PyPI](https://pypi.org/project/repo2pdf/) (Recommended)
 
 ```bash
 pip install repo2pdf
