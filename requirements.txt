@@ -1,0 +1,4 @@
+fpdf2
+GitPython
+inquirer
+pathspec
