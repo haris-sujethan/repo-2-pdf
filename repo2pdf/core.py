@@ -27,9 +27,9 @@ def process_remote_repo(url, want_json=False, output_path=None, exclude_list=Non
     if want_json:
         output_json(files, output_path)
 
-    if delete:
+    if delete and os.path.exists(tmp_dir):
         shutil.rmtree(tmp_dir)
-        print("Temporary repo deleted.")
+        print("Temporary repo deleted")
 
 
 def traverse_repo(path, exclude_list=[]):

@@ -7,7 +7,7 @@ def generate_pdf(files, output_path):
 
     # Use bundled font
     font_path = os.path.join(os.path.dirname(__file__), "fonts", "DejaVuSans.ttf")
-    pdf.add_font("DejaVu", "", font_path, uni=True)
+    pdf.add_font("DejaVu", "", font_path)
     pdf.set_font("DejaVu", size=10)
 
     for filename, content in files:
