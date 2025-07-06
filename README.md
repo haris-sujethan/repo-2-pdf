@@ -4,10 +4,10 @@ Convert your repositories into clean PDFs and structured JSON outputs, designed 
 
 ## Features
 
-- 📁 Convert **local** or **remote GitHub repositories**
-- 📄 Generate **PDFs** containing full file structures and contents
-- 📊 Output structured **JSON summaries** for AI context ingestion
-- 🚫 Exclude unnecessary file types automatically
+- Convert **local** or **remote GitHub repositories**
+- Generate **PDFs** containing full file structures and contents
+- Output structured **JSON summaries** for AI context ingestion
+- Exclude unnecessary file types automatically
 
 ## Installation
 
@@ -52,17 +52,18 @@ repo2pdf
 
 **Follow the interactive prompts:**
 
-1. 📂 Select local or remote repository
-2. 🔗 Provide the local repo path or GitHub URL
-3. 📍 Choose an output location
-4. 🚫 Exclude any file types you don't want included (e.g., `.png`, `.jpg`)
-5. 📊 Optionally generate a JSON summary alongside the PDF
+1. Select local or remote repository
+2. Provide the local repo path or GitHub URL
+3. Choose an output location
+4. Exclude any file types you don't want included (e.g., `.png`, `.jpg`)
+5. Optionally generate a JSON summary alongside the PDF
 
 ## Example CLI Flow
 
 The CLI provides an interactive terminal interface that guides you through the conversion process:
 
-![Example CLI Interface](repo2pdf/docs/images/example-CLI.png)
+![Example CLI Interface](repo2pdf/docs/images/CLI-1.png)
+![Example CLI Interface](repo2pdf/docs/images/CLI-2.png)
 
 ## Example Outputs
 
