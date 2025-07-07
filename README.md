@@ -60,8 +60,6 @@ repo2pdf
 
 ## Example CLI Flow
 
-The CLI provides an interactive terminal interface that guides you through the conversion process:
-
 <img src="https://raw.githubusercontent.com/haris-sujethan/repo-2-pdf/main/repo2pdf/docs/images/example-CLI.png" alt="Example CLI Interface" width="850"/>
 
 ## Example Outputs
