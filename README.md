@@ -62,7 +62,7 @@ repo2pdf
 
 The CLI provides an interactive terminal interface that guides you through the conversion process:
 
-<img src="repo2pdf/docs/images/example-CLI.png" alt="Example CLI Interface" width="850"/>
+<img src="https://raw.githubusercontent.com/haris-sujethan/repo-2-pdf/main/repo2pdf/docs/images/example-CLI.png" alt="Example CLI Interface" width="850"/>
 
 ## Example Outputs
 
