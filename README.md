@@ -1,6 +1,6 @@
 # repo-2-pdf
 
-Convert your repositories into clean PDFs and structured JSON outputs, **designed for giving LLMs full context of your codebase**
+CLI tool to convert your repositories into clean PDFs and structured JSON outputs, **designed for giving LLMs full context of your codebase**
 
 ## Features
 
