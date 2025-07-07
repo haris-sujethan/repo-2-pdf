@@ -1,6 +1,6 @@
 # repo-2-pdf
 
-Convert your repositories into clean PDFs and structured JSON outputs, designed for AI ingestion pipelines but also useful for documentation.
+Convert your repositories into clean PDFs and structured JSON outputs, **designed for giving LLMs full context of your codebase**
 
 ## Features
 
