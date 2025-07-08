@@ -66,5 +66,5 @@ repo2pdf
 
 Example outputs are available in the `/examples` folder:
 
-- **repo_output.pdf** - Clean PDF with full repository structure and file contents
-- **repo_output.json** - Structured JSON summary perfect for AI ingestion
+- **repo_output.pdf**
+- **repo_output.json** 
