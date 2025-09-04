@@ -1,0 +1,92 @@
+{
+  "repo_name": "repo2pdf",
+  "root": "/Users/harissujethan/Desktop/repo2pdf",
+  "file_count": 14,
+  "generated_at": "2025-09-04T21:10:34.388863+00:00",
+  "files": [
+    {
+      "path": ".gitignore",
+      "ext": "",
+      "size_bytes": 107,
+      "line_count": 9
+    },
+    {
+      "path": "README.md",
+      "ext": ".md",
+      "size_bytes": 1519,
+      "line_count": 70
+    },
+    {
+      "path": "pyproject.toml",
+      "ext": ".toml",
+      "size_bytes": 477,
+      "line_count": 23
+    },
+    {
+      "path": "repo2pdf/__init__.py",
+      "ext": ".py",
+      "size_bytes": 37,
+      "line_count": 3
+    },
+    {
+      "path": "repo2pdf/cli.py",
+      "ext": ".py",
+      "size_bytes": 2361,
+      "line_count": 50
+    },
+    {
+      "path": "repo2pdf/core.py",
+      "ext": ".py",
+      "size_bytes": 7032,
+      "line_count": 223
+    },
+    {
+      "path": "repo2pdf/pdf.py",
+      "ext": ".py",
+      "size_bytes": 29557,
+      "line_count": 756
+    },
+    {
+      "path": "repo2pdf/utils.py",
+      "ext": ".py",
+      "size_bytes": 1983,
+      "line_count": 83
+    },
+    {
+      "path": "requirements.txt",
+      "ext": ".txt",
+      "size_bytes": 56,
+      "line_count": 6
+    },
+    {
+      "path": "setup.py",
+      "ext": ".py",
+      "size_bytes": 321,
+      "line_count": 17
+    },
+    {
+      "path": "tests/__init__.py",
+      "ext": ".py",
+      "size_bytes": 0,
+      "line_count": 0
+    },
+    {
+      "path": "tests/test_core.py",
+      "ext": ".py",
+      "size_bytes": 3049,
+      "line_count": 86
+    },
+    {
+      "path": "tests/test_pdf.py",
+      "ext": ".py",
+      "size_bytes": 391,
+      "line_count": 13
+    },
+    {
+      "path": "tests/test_utils.py",
+      "ext": ".py",
+      "size_bytes": 642,
+      "line_count": 20
+    }
+  ]
+}

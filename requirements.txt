@@ -3,3 +3,4 @@ GitPython
 inquirer
 pathspec
 pytest
+pygments>=2.13
