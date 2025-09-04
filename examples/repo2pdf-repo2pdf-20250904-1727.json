@@ -2,7 +2,7 @@
   "repo_name": "repo2pdf",
   "root": "/Users/harissujethan/Desktop/repo2pdf",
   "file_count": 14,
-  "generated_at": "2025-09-04T21:10:34.388863+00:00",
+  "generated_at": "2025-09-04T21:27:33.764407+00:00",
   "files": [
     {
       "path": ".gitignore",
@@ -43,8 +43,8 @@
     {
       "path": "repo2pdf/pdf.py",
       "ext": ".py",
-      "size_bytes": 29557,
-      "line_count": 756
+      "size_bytes": 30043,
+      "line_count": 759
     },
     {
       "path": "repo2pdf/utils.py",

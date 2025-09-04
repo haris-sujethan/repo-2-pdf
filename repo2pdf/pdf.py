@@ -8,7 +8,7 @@
 # - Safe soft-wrapping; no empty background bands; robust around page breaks
 # - Small-file packing: multiple tiny files share a page when space allows
 # - Header shows: path • language • lines (per-page context)
-# - Appendix: transparent “Skipped & condensed” summary
+# - Appendix: transparent "Skipped & condensed" summary
 
 from __future__ import annotations
 
@@ -39,16 +39,16 @@ DEJAVU_MONO = os.path.join(FONTS_DIR, "DejaVuSansMono.ttf")
 # Minimal text normalizer so DejaVu can render everything
 CHAR_MAP = {
     # arrows, misc
-    "⚠️": "⚠", "➡️": "→", "➡": "→", "⬅️": "←", "⬅": "←",
+    "⚠": "⚠", "→": "→", "→": "→", "←": "←", "←": "←",
     # smart punctuation -> ASCII
-    "–": "-", "—": "-", "―": "-", "−": "-",
-    "“": '"', "”": '"', "„": '"', "«": '"', "»": '"',
-    "‘": "'", "’": "'", "‚": "'", "‹": "'", "›": "'",
-    "\u00A0": " ",  # NBSP
+    "–": "-", "—": "-", "‒": "-", "−": "-",
+    """: '"', """: '"', "„": '"', "‚": '"', "‹": '"',
+    "'": "'", "'": "'", "‚": "'", "‹": "'", "›": "'",
+    "\u00A0": " ", # NBSP
 }
 
 def normalize_text_for_pdf(s: str) -> str:
-    s = (s or "").replace("️", "")  # strip variation selector
+    s = (s or "").replace("︎", "") # strip variation selector
     for k, v in CHAR_MAP.items():
         s = s.replace(k, v)
     return s
@@ -67,10 +67,10 @@ class RepoPDF(FPDF):
 
     def __init__(self, meta: PDFMeta):
         super().__init__(orientation="P", unit="mm", format="A4")
-        # Slightly larger bottom margin so footers never collide
-        self.set_auto_page_break(auto=True, margin=16)
+        # Reduced bottom margin from 16 to 10 for tighter spacing
+        self.set_auto_page_break(auto=True, margin=10)
         self.meta = meta
-        self._toc: List[Tuple[str, int, int]] = []   # (label, level, page)
+        self._toc: List[Tuple[str, int, int]] = [] # (label, level, page)
         self._links: Dict[str, int] = {}
         self._toc_reserved_page: Optional[int] = None
         # Header state (per page)
@@ -89,9 +89,9 @@ class RepoPDF(FPDF):
                     f"Missing/invalid font at {path}. Please vendor real DejaVu TTF binaries."
                 )
         # Register Unicode-safe fonts (regular + bold only; no italics to prevent errors)
-        self.add_font("DejaVu", style="",  fname=DEJAVU_SANS,      uni=True)
+        self.add_font("DejaVu", style="", fname=DEJAVU_SANS, uni=True)
         self.add_font("DejaVu", style="B", fname=DEJAVU_SANS_BOLD, uni=True)
-        self.add_font("DejaVuMono", style="", fname=DEJAVU_MONO,   uni=True)
+        self.add_font("DejaVuMono", style="", fname=DEJAVU_MONO, uni=True)
         self.set_font("DejaVu", size=11)
 
     def _set_doc_info(self):
@@ -118,7 +118,7 @@ class RepoPDF(FPDF):
         left_txt = normalize_text_for_pdf(self._hdr_path)
         if right_part:
             # reserve space for right_part
-            rp_w = self.get_string_width("  " + right_part)
+            rp_w = self.get_string_width(" " + right_part)
             avail = max_w - rp_w
             # elide left if too long
             while self.get_string_width(left_txt) > avail and len(left_txt) > 4:
@@ -134,7 +134,8 @@ class RepoPDF(FPDF):
         self.set_line_width(0.2)
         y = self.get_y()
         self.line(self.l_margin, y, self.w - self.r_margin, y)
-        self.ln(2)
+        # Reduced from ln(2) to ln(1)
+        self.ln(1)
         self.set_text_color(0)
 
     def footer(self):
@@ -162,20 +163,20 @@ class RepoPDF(FPDF):
 
         self.add_page()
         self.set_font("DejaVu", "B", 22)
-        self.ln(30)
+        self.ln(25)  # Reduced from 30
         self._safe_multicell(normalize_text_for_pdf(self.meta.title), line_h=12)
-        self.ln(4)
+        self.ln(3)  # Reduced from 4
         self.set_font("DejaVu", size=12)
         sub = self.meta.subtitle or "Repository to PDF"
         self._safe_multicell(normalize_text_for_pdf(sub), line_h=8)
-        self.ln(4)
+        self.ln(3)  # Reduced from 4
         if self.meta.repo_url:
             url = normalize_text_for_pdf(self.meta.repo_url)
             self.set_text_color(60, 90, 200)
             self.set_x(self.l_margin)
             self.cell(self._page_width_available(), 8, url, align="C", ln=1, link=self.meta.repo_url)
             self.set_text_color(0)
-        self.ln(6)
+        self.ln(4)  # Reduced from 6
         when = (self.meta.generated_at or datetime.utcnow()).strftime("%Y-%m-%d %H:%M UTC")
         self.set_text_color(120)
         self.set_x(self.l_margin)
@@ -204,7 +205,7 @@ class RepoPDF(FPDF):
 
         self.set_font("DejaVu", "B", 16)
         self._safe_multicell("Table of Contents", line_h=10)
-        self.ln(2)
+        self.ln(1)  # Reduced from 2
 
         # Guard: don't let ToC overflow this single page (truncate gracefully)
         bottom_limit = self.h - self.b_margin
@@ -214,7 +215,7 @@ class RepoPDF(FPDF):
             if self.get_y() + 8 > bottom_limit:
                 truncated = True
                 break
-            indent = "    " * level
+            indent = " " * level
             text = f"{indent}{normalize_text_for_pdf(label)}"
             link_id = self._links.get(label)
             y_before = self.get_y()
@@ -254,14 +255,16 @@ class RepoPDF(FPDF):
         title = "Overview"
         self.set_font("DejaVu", "B", 16)
         self._safe_multicell(title, line_h=10)
-        self.ln(1)
+        self.ln(0.5)  # Reduced from 1
         self.toc_add(title, level=0)
 
         self.set_font("DejaVu", size=11)
-        line_h = 6
+        line_h = 5.5  # Reduced from 6
 
         def p(text: str = ""):
             self._safe_multicell(normalize_text_for_pdf(text), line_h=line_h)
+            if text:
+                self.ln(0.2)  # Add minimal spacing only for non-empty text
 
         def bullet(text: str):
             self._safe_multicell(f"• {normalize_text_for_pdf(text)}", line_h=line_h)
@@ -285,7 +288,7 @@ class RepoPDF(FPDF):
             p(str(desc))
 
         if features:
-            self.ln(1)
+            self.ln(0.6)  # Reduced from 1
             self.set_font("DejaVu", "B", 12)
             p("Key Features")
             self.set_font("DejaVu", size=11)
@@ -293,24 +296,24 @@ class RepoPDF(FPDF):
                 bullet(str(f))
 
         if usage:
-            self.ln(1)
+            self.ln(0.6)  # Reduced from 1
             self.set_font("DejaVu", "B", 12)
             p("Quick Usage")
             self.set_font("DejaVuMono", size=10)
-            self._safe_multicell(str(usage), line_h=5.5)
+            self._safe_multicell(str(usage), line_h=5)  # Reduced from 5.5
             self.set_font("DejaVu", size=11)
 
         if exts:
-            self.ln(1)
+            self.ln(0.6)  # Reduced from 1
             self.set_font("DejaVu", "B", 12)
             p("Files & Languages")
             self.set_font("DejaVu", size=11)
             for ext, cnt in exts[:8]:
-                bullet(f"{ext} — {cnt} file(s)")
+                bullet(f"{ext} - {cnt} file(s)")
             bullet(f"Total files: {total_files}")
 
         if deps:
-            self.ln(1)
+            self.ln(0.6)  # Reduced from 1
             self.set_font("DejaVu", "B", 12)
             p("Dependencies")
             self.set_font("DejaVu", size=11)
@@ -339,12 +342,12 @@ class RepoPDF(FPDF):
         Write code using token-by-token coloring. Avoids drawing an empty band:
         we only draw the background after we know we'll print text on the line.
         """
-        content = content.replace("\t", "    ")  # Normalize tabs
+        content = content.replace("\t", "    ") # Normalize tabs
         lexer = self._ensure_lexer(rel_path, content)
 
         self.set_font("DejaVuMono", size=font_size)
-        # line height tuned for DejaVuMono (readable & compact)
-        line_h = max(4.6, font_size * 0.45 + 4.0)
+        # Reduced line height for tighter spacing
+        line_h = max(4.0, font_size * 0.38 + 3.2)
 
         # Layout geometry
         left_x = self.l_margin
@@ -356,9 +359,9 @@ class RepoPDF(FPDF):
 
         # State for current visual line
         cur_line_no = 1
-        at_line_start = True              # start of a visual line (no text yet)
-        drew_band_this_line = False       # background band drawn?
-        wrote_line_number = False         # line number drawn?
+        at_line_start = True # start of a visual line (no text yet)
+        drew_band_this_line = False # background band drawn?
+        wrote_line_number = False # line number drawn?
 
         def start_new_visual_line(new_logical: bool = False):
             nonlocal at_line_start, drew_band_this_line, wrote_line_number, cur_line_no
@@ -428,7 +431,7 @@ class RepoPDF(FPDF):
                             self.cell(piece_w, line_h, piece, ln=0)
                             piece = ""
                         else:
-                            # Need to break piece — largest prefix that fits
+                            # Need to break piece - largest prefix that fits
                             lo, hi = 0, len(piece)
                             while lo < hi:
                                 mid = (lo + hi + 1) // 2
@@ -470,10 +473,10 @@ class RepoPDF(FPDF):
 
     def _estimate_block_height(self, line_count: int, font_size: int = 9) -> float:
         """Rough height estimate for small-file packing (title + meta + lines)."""
-        title_h = 9.0
-        meta_h = 5.5
-        line_h = max(4.6, font_size * 0.45 + 4.0)
-        return title_h + 1 + meta_h + 1 + line_count * line_h + 2
+        title_h = 8.0  # Reduced from 9.0
+        meta_h = 5.0   # Reduced from 5.5
+        line_h = max(4.0, font_size * 0.38 + 3.2)
+        return title_h + 0.5 + meta_h + 0.5 + line_count * line_h + 1
 
     def _set_header_context(self, path: str, lang: str, lines: int):
         self._hdr_path = path
@@ -510,15 +513,15 @@ class RepoPDF(FPDF):
 
         # File title
         self.set_font("DejaVu", "B", 14)
-        self._safe_multicell(normalize_text_for_pdf(rel_path), line_h=9)
+        self._safe_multicell(normalize_text_for_pdf(rel_path), line_h=8)  # Reduced from 9
 
         # File meta line: language + line count
         self.set_font("DejaVu", size=9)
         self.set_text_color(110)
         meta_line = f"{lang} • {line_count} line(s)"
-        self._safe_multicell(meta_line, line_h=5.5)
+        self._safe_multicell(meta_line, line_h=5)  # Reduced from 5.5
         self.set_text_color(0)
-        self.ln(1)
+        self.ln(0.4)  # Reduced from 1
 
         # ToC + link
         self.toc_add(rel_path, level=0)
@@ -538,15 +541,15 @@ class RepoPDF(FPDF):
         self.add_page()
         self.set_font("DejaVu", "B", 16)
         self._safe_multicell("Appendix: Skipped & condensed", line_h=10)
-        self.ln(2)
+        self.ln(1)  # Reduced from 2
         self.set_font("DejaVu", size=11)
 
         def row(label: str, value: Any):
             self.set_font("DejaVu", "B", 11)
-            self._safe_multicell(label, line_h=6)
+            self._safe_multicell(label, line_h=5.5)  # Reduced from 6
             self.set_font("DejaVu", size=11)
-            self._safe_multicell(str(value), line_h=6)
-            self.ln(1)
+            self._safe_multicell(str(value), line_h=5.5)  # Reduced from 6
+            self.ln(0.3)  # Reduced from 1
 
         counts = summary.get("counts", {})
         notes = summary.get("notes", [])
@@ -562,12 +565,12 @@ class RepoPDF(FPDF):
         row("Packed small files (co-located per page)", packed)
 
         if notes:
-            self.ln(2)
+            self.ln(1)  # Reduced from 2
             self.set_font("DejaVu", "B", 12)
-            self._safe_multicell("Notes", line_h=7)
+            self._safe_multicell("Notes", line_h=6)  # Reduced from 7
             self.set_font("DejaVu", size=11)
             for n in notes:
-                self._safe_multicell(f"• {n}", line_h=6)
+                self._safe_multicell(f"• {n}", line_h=5.5)  # Reduced from 6
 
 
 # ---------------------------------------------------------------------------
@@ -584,14 +587,14 @@ def generate_pdf(
     Generate a polished PDF from an iterable of (relative_path, content).
 
     Adds:
-      - Cover
-      - Table of Contents (at the start; one page, truncated if needed)
-      - Text Overview section (LLM + human friendly)
-      - File sections (syntax-highlighted, small-file packing)
-      - Appendix with skip/condense summary
+    - Cover
+    - Table of Contents (at the start; one page, truncated if needed)
+    - Text Overview section (LLM + human friendly)
+    - File sections (syntax-highlighted, small-file packing)
+    - Appendix with skip/condense summary
     """
     meta = meta or PDFMeta(title="Repository Export", generated_at=datetime.utcnow())
-    files = list(files)  # iterate twice safely
+    files = list(files) # iterate twice safely
     pdf = RepoPDF(meta)
 
     # 1) Cover
@@ -605,7 +608,7 @@ def generate_pdf(
     pdf.add_overview_section(overview)
 
     # 4) Sections with small-file packing
-    SMALL_LINE_THRESHOLD = 30
+    SMALL_LINE_THRESHOLD = 40  # Increased from 30 to pack more files together
     current_page_small_lines = 0
     for rel_path, content in files:
         # Safety for pathological lines (still soft wrap later)
@@ -677,7 +680,7 @@ def _build_overview_data(files: List[Tuple[str, str]], meta: PDFMeta) -> Dict[st
         if parts:
             desc = parts[0][:800]
 
-    # Features: README bullet list (first 5–8)
+    # Features: README bullet list (first 5-8)
     features: List[str] = []
     if readme:
         for line in readme.splitlines():
@@ -692,8 +695,8 @@ def _build_overview_data(files: List[Tuple[str, str]], meta: PDFMeta) -> Dict[st
         m = re.search(r"```(?:bash|sh)?\s*([^`]*repo2pdf[^\n`]*\n(?:.*?\n)*)```", readme, flags=re.IGNORECASE)
         if m:
             usage = m.group(1).strip()
-    if not usage:
-        usage = "repo2pdf  # Follow interactive prompts"
+        if not usage:
+            usage = "repo2pdf # Follow interactive prompts"
 
     # Language & file stats
     from collections import Counter
@@ -733,19 +736,19 @@ def _build_overview_data(files: List[Tuple[str, str]], meta: PDFMeta) -> Dict[st
 
 # Simple light theme for tokens (tweak as you like)
 THEME = {
-    Token.Comment:        (120, 120, 120),
-    Token.Keyword:        (170,  55, 140),
-    Token.Keyword.Namespace: (170,  55, 140),
-    Token.Name.Function:  ( 30, 120, 180),
-    Token.Name.Class:     ( 30, 120, 180),
+    Token.Comment: (120, 120, 120),
+    Token.Keyword: (170, 55, 140),
+    Token.Keyword.Namespace: (170, 55, 140),
+    Token.Name.Function: ( 30, 120, 180),
+    Token.Name.Class: ( 30, 120, 180),
     Token.Name.Decorator: (135, 110, 180),
-    Token.String:         ( 25, 140,  65),
-    Token.Number:         (190, 110,  30),
-    Token.Operator:       ( 90,  90,  90),
-    Token.Punctuation:    ( 90,  90,  90),
-    Token.Name.Builtin:   ( 30, 120, 180),
-    Token.Name.Variable:  (  0,   0,   0),
-    Token.Text:           (  0,   0,   0),
+    Token.String: ( 25, 140, 65),
+    Token.Number: (190, 110, 30),
+    Token.Operator: ( 90, 90, 90),
+    Token.Punctuation: ( 90, 90, 90),
+    Token.Name.Builtin: ( 30, 120, 180),
+    Token.Name.Variable: ( 0, 0, 0),
+    Token.Text: ( 0, 0, 0),
 }
 
 def _rgb_for(tok_type):
