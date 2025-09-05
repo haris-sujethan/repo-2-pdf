@@ -29,6 +29,7 @@ from pygments.token import Token
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
+
 PACKAGE_DIR = os.path.dirname(__file__)
 FONTS_DIR = os.path.join(PACKAGE_DIR, "fonts")
 
@@ -39,20 +40,18 @@ DEJAVU_MONO = os.path.join(FONTS_DIR, "DejaVuSansMono.ttf")
 # Minimal text normalizer so DejaVu can render everything
 CHAR_MAP = {
     # arrows, misc
-    "⚠": "⚠", "→": "→", "→": "→", "←": "←", "←": "←",
+    "⚠": "⚠", "→": "→", "←": "←",
     # smart punctuation -> ASCII
-    "–": "-", "—": "-", "‒": "-", "−": "-",
-    """: '"', """: '"', "„": '"', "‚": '"', "‹": '"',
-    "'": "'", "'": "'", "‚": "'", "‹": "'", "›": "'",
-    "\u00A0": " ", # NBSP
+    "—": "-", "–": "-", "-": "-", "−": "-", "―": "-",
+    "“": '"', "”": '"', "„": '"', "′": "'", "’": "'", "‚": "'", "‹": "<", "›": ">",
+    "\u00A0": " ",  # NBSP
 }
 
 def normalize_text_for_pdf(s: str) -> str:
-    s = (s or "").replace("︎", "") # strip variation selector
+    s = (s or "").replace("\uFE0F", "")  # strip variation selector
     for k, v in CHAR_MAP.items():
         s = s.replace(k, v)
     return s
-
 
 @dataclass
 class PDFMeta:
@@ -60,7 +59,6 @@ class PDFMeta:
     subtitle: Optional[str] = None
     repo_url: Optional[str] = None
     generated_at: Optional[datetime] = None
-
 
 class RepoPDF(FPDF):
     """FPDF renderer with a cover, ToC at start, text Overview, and per-file sections."""
@@ -70,14 +68,13 @@ class RepoPDF(FPDF):
         # Reduced bottom margin from 16 to 10 for tighter spacing
         self.set_auto_page_break(auto=True, margin=10)
         self.meta = meta
-        self._toc: List[Tuple[str, int, int]] = [] # (label, level, page)
+        self._toc: List[Tuple[str, int, int]] = []  # (label, level, page)
         self._links: Dict[str, int] = {}
         self._toc_reserved_page: Optional[int] = None
         # Header state (per page)
         self._hdr_path: str = meta.title
         self._hdr_lang: str = ""
         self._hdr_lines: Optional[int] = None
-
         self._register_fonts()
         self._set_doc_info()
 
@@ -115,6 +112,7 @@ class RepoPDF(FPDF):
             parts = [p for p in [self._hdr_lang, f"{self._hdr_lines} lines" if self._hdr_lines else None] if p]
             right_part = " • ".join(parts)
         max_w = self.w - self.l_margin - self.r_margin
+
         left_txt = normalize_text_for_pdf(self._hdr_path)
         if right_part:
             # reserve space for right_part
@@ -342,7 +340,7 @@ class RepoPDF(FPDF):
         Write code using token-by-token coloring. Avoids drawing an empty band:
         we only draw the background after we know we'll print text on the line.
         """
-        content = content.replace("\t", "    ") # Normalize tabs
+        content = content.replace("\t", "    ")  # Normalize tabs
         lexer = self._ensure_lexer(rel_path, content)
 
         self.set_font("DejaVuMono", size=font_size)
@@ -354,14 +352,15 @@ class RepoPDF(FPDF):
         right_x = self.w - self.r_margin
         bottom_limit = self.h - self.b_margin
         lines_total = (content.count("\n") + 1) if content else 1
+
         gutter_w = (self.get_string_width(str(lines_total)) + 4) if line_numbers else 0.0
         code_x = left_x + gutter_w
 
         # State for current visual line
         cur_line_no = 1
-        at_line_start = True # start of a visual line (no text yet)
-        drew_band_this_line = False # background band drawn?
-        wrote_line_number = False # line number drawn?
+        at_line_start = True  # start of a visual line (no text yet)
+        drew_band_this_line = False  # background band drawn?
+        wrote_line_number = False  # line number drawn?
 
         def start_new_visual_line(new_logical: bool = False):
             nonlocal at_line_start, drew_band_this_line, wrote_line_number, cur_line_no
@@ -375,14 +374,24 @@ class RepoPDF(FPDF):
                 cur_line_no += 1
 
         def ensure_band_and_gutter():
-            """Draw background + gutter only once, right before first text on the visual line."""
-            nonlocal drew_band_this_line, wrote_line_number
+            """Draw background + gutter only once, right before first text on the visual line.
+
+            IMPORTANT: Guard against page bottom *before* drawing anything to avoid blank pages.
+            """
+            nonlocal drew_band_this_line, wrote_line_number, at_line_start
             if drew_band_this_line:
                 return
             y = self.get_y()
+            # If not enough space for this line, force a page break first
             if y + line_h > bottom_limit:
-                # page is about to break; after break we are at new page top
-                pass
+                # Explicitly add a page so the band/text draw on the *new* page
+                self.add_page()
+                # Reset per-line state at new page top
+                at_line_start = True
+                drew_band_this_line = False
+                wrote_line_number = False
+                y = self.get_y()
+
             # Draw band
             self.set_fill_color(248, 248, 248)
             self.rect(left_x, y, right_x - left_x, line_h, style="F")
@@ -392,6 +401,7 @@ class RepoPDF(FPDF):
                 self.set_xy(left_x, y)
                 self.cell(gutter_w, line_h, str(cur_line_no).rjust(len(str(lines_total))), align="R")
                 wrote_line_number = True
+
             # Move to code start
             self.set_xy(code_x, y)
             drew_band_this_line = True
@@ -450,9 +460,8 @@ class RepoPDF(FPDF):
                             ensure_band_and_gutter()
                             piece = rest
 
-            # If the logical line did not end with "\n", we need to move to next logical line
-            if not logical_line.endswith("\n"):
-                start_new_visual_line(new_logical=True)
+            # NOTE: Removed the unconditional advance for non-terminated lines.
+            # Previously this could contribute to stray blank lines/pages at boundaries.
 
         # Reset color
         self.set_text_color(0, 0, 0)
@@ -572,7 +581,6 @@ class RepoPDF(FPDF):
             for n in notes:
                 self._safe_multicell(f"• {n}", line_h=5.5)  # Reduced from 6
 
-
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -594,7 +602,7 @@ def generate_pdf(
     - Appendix with skip/condense summary
     """
     meta = meta or PDFMeta(title="Repository Export", generated_at=datetime.utcnow())
-    files = list(files) # iterate twice safely
+    files = list(files)  # iterate twice safely
     pdf = RepoPDF(meta)
 
     # 1) Cover
@@ -739,16 +747,16 @@ THEME = {
     Token.Comment: (120, 120, 120),
     Token.Keyword: (170, 55, 140),
     Token.Keyword.Namespace: (170, 55, 140),
-    Token.Name.Function: ( 30, 120, 180),
-    Token.Name.Class: ( 30, 120, 180),
+    Token.Name.Function: (30, 120, 180),
+    Token.Name.Class: (30, 120, 180),
     Token.Name.Decorator: (135, 110, 180),
-    Token.String: ( 25, 140, 65),
+    Token.String: (25, 140, 65),
     Token.Number: (190, 110, 30),
-    Token.Operator: ( 90, 90, 90),
-    Token.Punctuation: ( 90, 90, 90),
-    Token.Name.Builtin: ( 30, 120, 180),
-    Token.Name.Variable: ( 0, 0, 0),
-    Token.Text: ( 0, 0, 0),
+    Token.Operator: (90, 90, 90),
+    Token.Punctuation: (90, 90, 90),
+    Token.Name.Builtin: (30, 120, 180),
+    Token.Name.Variable: (0, 0, 0),
+    Token.Text: (0, 0, 0),
 }
 
 def _rgb_for(tok_type):
