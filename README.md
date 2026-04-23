@@ -2,6 +2,8 @@
 
 CLI tool to convert your repositories into clean PDFs and structured JSON outputs, **designed for giving LLMs full context of your codebase**
 
+If you prefer a lightweight version better suited for enterprise I also built: **[repo-2-html](https://github.com/haris-sujethan/repo-2-html)**
+
 ## Features
 
 - Convert **local** or **remote GitHub repositories**
